@@ -45,53 +45,81 @@
   <section class="container"></section>
 </body>
 <script>
+  console.log(localStorage.last ? localStorage.last : '打字時間還沒紀錄');
+  let keybr = {
+    row: 5,
+    words: 6,
+    color: '#ccc'
+  }
+  let { row, words } = keybr;
+  let totalTime, rowTime;
   let container = document.querySelector('.container');
   let index = 0;
-  let color = '#ccc';
 
   // 獲取API並創建group和span標籤
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < row; i++) {
     let wrap = document.createElement('div');
-    for(let j=0; j<5; j++) {
+    for (let j = 0; j < words; j++) {
       fetch('http://127.0.0.1:3007/api/word')
-      .then(res => res.json())
-      .then(({ word }) => {
-        let group = document.createElement('div');
-        let words = (word + '_').split('');
-        group.setAttribute('class', 'group');
-        wrap.setAttribute('class', 'wrap');
-        words.forEach(str => {
-          let span = document.createElement('span');
-          span.innerText = str;
-          span.setAttribute('currentKey', str !== '_' ? str : ' ');
-          group.appendChild(span);
-        });
-        wrap.appendChild(group);
-        container.appendChild(wrap);
-      });
+        .then(res => res.json())
+        .then(({ word }) => {
+          let group = document.createElement('div');
+          let words = (word + '_').split('');
+          group.setAttribute('class', 'group');
+          wrap.setAttribute('class', 'wrap');
+          words.forEach((item, i) => {
+            let span = document.createElement('span');
+            span.innerText = item;
+            span.setAttribute('currentKey', item !== '_' ? item : ' ');
+            group.appendChild(span);
+          });
+          if (j + 1 === keybr.words) group.lastChild.setAttribute('last', true);
+          if (i + 1 === keybr.row && j + 1 === keybr.words) group.lastChild.setAttribute('ultimate', true);
+          wrap.appendChild(group);
+          container.appendChild(wrap);
+        })
+        .catch(e => console.log(e));
     }
   }
 
   // 打字相關
   document.addEventListener('keydown', event => {
     const spans = document.querySelectorAll('span');
+    const groups = document.querySelectorAll('.group');
     if (spans.length === index) index = 0;
 
+    if (spans[index].getAttribute('last')) {
+      let nowTime = new Date().getTime();
+      console.log(('單行花費時間' + ((nowTime - rowTime) / 1000).toFixed(2)) + '秒');
+      rowTime = new Date().getTime();
+    }
+
+    if (spans[index].getAttribute('ultimate')) {
+      let nowTime = new Date().getTime();
+      let total = ((nowTime - totalTime) / 1000).toFixed(2) + '秒';
+      localStorage.setItem('last', '上次打字花費時間' + total);
+      console.log('總打字時間' + total);
+      setTimeout(() => {
+        location.href = 'http://127.0.0.1:5500/keyboard.html';
+      }, 1000);
+    }
+
     if (event.key === spans[index].getAttribute('currentKey')) {
-      spans[index].style.cssText = `color: ${color}`;
-      color = '#ccc';
+      totalTime = index === 1 ? new Date().getTime() : totalTime;
+      rowTime = index === 1 ? new Date().getTime() : rowTime;
+      spans[index].style.cssText = `color: ${keybr.color}`;
+      keybr.color = '#ccc';
       index++;
     } else {
-      color = 'red';
+      keybr.color = 'red';
     }
 
     if (event.key === 'Escape') {
       spans.forEach(span => span.style.cssText = '');
       index = 0;
-      color = '#ccc';
+      keybr.color = '#ccc';
     }
   });
-
 </script>
 
 </html>
