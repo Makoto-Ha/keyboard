@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>keyboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+    }
+
+    :root {
+      font-size: 50px;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      width: 80%;
+      margin: 0 auto;
+    }
+
+    .wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .group {
+      width: 50%;
+    }
+
+    span {
+      font-size: 1rem;
+      margin: 0 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="container">
+    <div class="wrap"></div>
+  </section>
+</body>
+<script>
+  let index = 0;
+  let color = '#ccc';
+
+  // 獲取API並創建group和span標籤
+  for (let i = 0; i < 5; i++) {
+    fetch('http://127.0.0.1:3007/api/word')
+      .then(res => res.json())
+      .then(({ word }) => {
+        let group = document.createElement('div');
+        let words = (word + '_').split('');
+        group.class = 'group';
+        document.querySelector('.wrap').appendChild(group);
+
+        words.forEach(str => {
+          let span = document.createElement('span');
+          span.innerText = str;
+          span.setAttribute('currentKey', str !== '_' ? str : ' ');
+          group.appendChild(span);
+        });
+      });
+  }
+
+  // 打字相關
+  document.addEventListener('keydown', event => {
+    const spans = document.querySelectorAll('span');
+    if (spans.length === index) index = 0;
+
+    if (event.key === '') {
+      console.log('空白按鍵');
+    }
+
+
+    if (event.key === spans[index].getAttribute('currentKey')) {
+      spans[index].style.cssText = `color: ${color}`;
+      color = '#ccc';
+      index++;
+    } else {
+      color = 'red';
+    }
+
+    if (event.key === 'Escape') {
+      spans.forEach(span => span.style.cssText = '');
+      index = 0;
+      color = '#ccc';
+    }
+  });
+
+</script>
+
+</html>
