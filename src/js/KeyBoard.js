@@ -19,7 +19,6 @@ class Keyboard extends View {
   rowRecord(key) {
     let nowTime = new Date().getTime();
     let record = ('時間' + ((nowTime - this.rowTime) / 1000).toFixed(2)) + '秒';
-    console.log(record);
     super.rowRecord(record, key);
     this.rowTime = new Date().getTime();
   }
@@ -28,12 +27,14 @@ class Keyboard extends View {
     let nowTime = new Date().getTime();
     let total = ((nowTime - this.totalTime) / 1000).toFixed(2) + '秒';
     localStorage.setItem('ultimate', '上次打字花費時間' + total);
-    location.href = 'http://127.0.0.1:5500/keyboard.html';
+    super.clear();
+    super.keyBoard();
+    this.index = -1;
   }
   // 事件綁定
   keyEvent({ key: intputKey }) {
     let currentKey = this.keys[this.index];
-    let isCurrentKey = intputKey === currentKey.getAttribute('currentKey')
+    let isCurrentKey = intputKey === currentKey.getAttribute('currentKey');
     if (isCurrentKey) {
       this.startRecord(currentKey);
       currentKey.style.cssText = `color: ${this.color}`;

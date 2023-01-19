@@ -58,6 +58,8 @@ class View {
   // 清除容器渲染
   clear() {
     this.container.innerHTML = '';
+    this.keys = [];
+    this.wordEnglish = [];
   }
 }
 
