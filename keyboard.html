@@ -47,34 +47,40 @@
 <script>
   console.log(localStorage.last ? localStorage.last : '打字時間還沒紀錄');
   let keybr = {
-    row: 5,
-    words: 6,
+    row: 3,
+    words: 3,
     color: '#ccc'
   }
   let { row, words } = keybr;
   let totalTime, rowTime;
   let container = document.querySelector('.container');
   let index = 0;
+  let spans = [];
+  let groups = [];
 
   // 獲取API並創建group和span標籤
-  for (let i = 0; i < row; i++) {
+  for (let i = 1; i <= row; i++) {
     let wrap = document.createElement('div');
-    for (let j = 0; j < words; j++) {
+    for (let j = 1; j <= words; j++) {
       fetch('http://127.0.0.1:3007/api/word')
         .then(res => res.json())
         .then(({ word }) => {
           let group = document.createElement('div');
-          let words = (word + '_').split('');
+          let segmentation = i === row && j === words ?
+            word.split('') :
+            ((word + '_').split(''));
           group.setAttribute('class', 'group');
           wrap.setAttribute('class', 'wrap');
-          words.forEach((item, i) => {
+          groups.push(group);
+          segmentation.forEach((item, i) => {
             let span = document.createElement('span');
             span.innerText = item;
             span.setAttribute('currentKey', item !== '_' ? item : ' ');
+            spans.push(span);
             group.appendChild(span);
           });
-          if (j + 1 === keybr.words) group.lastChild.setAttribute('last', true);
-          if (i + 1 === keybr.row && j + 1 === keybr.words) group.lastChild.setAttribute('ultimate', true);
+          if (j === words) group.lastChild.setAttribute('last', true);
+          if (i === row && j === words) group.lastChild.setAttribute('ultimate', true);
           wrap.appendChild(group);
           container.appendChild(wrap);
         })
@@ -84,8 +90,6 @@
 
   // 打字相關
   document.addEventListener('keydown', event => {
-    const spans = document.querySelectorAll('span');
-    const groups = document.querySelectorAll('.group');
     if (spans.length === index) index = 0;
 
     if (spans[index].getAttribute('last')) {
