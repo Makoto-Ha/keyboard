@@ -1,45 +1,56 @@
 import View from './View.js';
 
-class Keyboard {
+class Keyboard extends View {
   container = document.querySelector('.container');
-  constructor(initData) {
-    this.init(initData);
+  constructor(data) {
+    super();
+    this.init(data);
+    this.view();
     this.bindEvent();
-    View.keyBoard.call(this);
+  }
+  
+  startRecord(key) {
+    this.totalTime = this.index === 0 ? new Date().getTime() : this.totalTime;
+    this.rowTime = this.index === 0 ? new Date().getTime() : this.rowTime;
+    key.getAttribute('last') && this.rowRecord();
+    key.getAttribute('ultimate') && this.ultimateRecord();
   }
 
-  keyEvent(event) {
-    let isCurrentKey = event.key === this.keys[this.index].getAttribute('currentKey')
+  rowRecord() {
+    let nowTime = new Date().getTime();
+    console.log(('單行花費時間' + ((nowTime - this.rowTime) / 1000).toFixed(2)) + '秒');
+    this.rowTime = new Date().getTime();
+  }
 
-    if (event.key === ' ' && this.keys[this.index].getAttribute('last')) {
-      let nowTime = new Date().getTime();
-      console.log(('單行花費時間' + ((nowTime - this.rowTime) / 1000).toFixed(2)) + '秒');
-      this.rowTime = new Date().getTime();
-    }
+  ultimateRecord() {
+    let nowTime = new Date().getTime();
+    let total = ((nowTime - this.totalTime) / 1000).toFixed(2) + '秒';
+    localStorage.setItem('last', '上次打字花費時間' + total);
+    location.href = 'http://127.0.0.1:5500/keyboard.html'
+  }
 
-    if (isCurrentKey && this.keys[this.index].getAttribute('ultimate')) {
-      let nowTime = new Date().getTime();
-      let total = ((nowTime - this.totalTime) / 1000).toFixed(2) + '秒';
-      localStorage.setItem('last', '上次打字花費時間' + total);
-      console.log('總打字時間' + total);
-      location.href = 'http://127.0.0.1:5500/keyboard.html'
-    }
+  keyEvent({ key: intputKey }) {
+    let currentKey = this.keys[this.index];
+    let isCurrentKey = intputKey === currentKey.getAttribute('currentKey')
 
     if (isCurrentKey) {
-      this.totalTime = this.index === 1 ? new Date().getTime() : this.totalTime;
-      this.rowTime = this.index === 1 ? new Date().getTime() : this.rowTime;
-      this.keys[this.index].style.cssText = `color: ${this.color}`;
+      this.startRecord(currentKey);
+      currentKey.style.cssText = `color: ${this.color}`;
       this.color = '#ccc';
-      this.index++;
+      return this.index++;
     } else {
       this.color = 'red';
     }
 
-    if (event.key === 'Escape') {
+    if (intputKey === 'Escape') {
       this.keys.forEach(key => key.style.cssText = '');
       this.index = 0;
       this.color = '#ccc';
     }
+  }
+
+  view() {
+    super.keyBoard();
   }
 
   bindEvent() {
@@ -52,7 +63,7 @@ class Keyboard {
     this.words = words;
     this.keys = [];
     this.wordEnglish = [];
-    View.keyBoard.call(this);
+    this.keyBoard();
   }
 
   init({ row, words }) {
