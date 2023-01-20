@@ -1,4 +1,5 @@
 import View from './View.js';
+import animate from './Animation.js';
 
 class Keyboard extends View {
   container = document.querySelector('.container');
@@ -27,8 +28,10 @@ class Keyboard extends View {
     let nowTime = new Date().getTime();
     let total = ((nowTime - this.totalTime) / 1000).toFixed(2) + '秒';
     localStorage.setItem('ultimate', '上次打字花費時間' + total);
+    localStorage.setItem('errors', this.keys.filter(span => span.style.color === 'red').length);
     console.log('-------------------');
     console.log(localStorage.getItem('ultimate'));
+    console.log('錯誤' + localStorage.getItem('errors'));
     console.log('-------------------');
     this.renew(Math.round(Math.random() * 3 + 1), Math.round(Math.random() * 3 + 1));
     // ultimateRecord結束後繼續跑keyEvent會index++，所以-1會變0
@@ -40,6 +43,7 @@ class Keyboard extends View {
     let isCurrentKey = intputKey === currentKey.getAttribute('currentKey');
     if (isCurrentKey) {
       this.startRecord(currentKey);
+      animate.move.call(this);
       currentKey.style.cssText = `color: ${this.color}`;
       this.color = '#ccc';
       return this.index++;
@@ -47,27 +51,48 @@ class Keyboard extends View {
       this.color = 'red';
     }
 
-    if (intputKey === 'Escape') {
-      super.rowRecordClear();
-      this.keys.forEach(key => key.style.cssText = '');
-      this.index = 0;
-      this.color = '#ccc';
-    }
+    if (intputKey === 'Escape') this.reset();
   }
   // 渲染
   view() {
     super.keyBoard();
+    super.peopleICON()
   }
-
   clear() {
     this.keys = [];
     this.english = [];
     super.clear();
   }
-
   bindEvent() {
-    document.addEventListener('keydown', this.keyEvent.bind(this));
+    this.__proto__.keyEvent = this.keyEvent.bind(this);
+    document.addEventListener('keydown', this.keyEvent);
+
+    this.container.addEventListener('click', event => {
+      event.stopPropagation();
+      document.addEventListener('keydown', this.keyEvent);
+      this.container.classList.remove('blur');
+    });
+
+    document.addEventListener('click', () => {
+      document.removeEventListener('keydown', this.keyEvent);
+      this.container.classList.add('blur');
+      this.reset();
+    });
+
+    window.addEventListener('blur', () => {
+      this.container.classList.add('blur');
+      this.reset();
+    });
+
   }
+
+  reset() {
+    super.rowRecordClear();
+    this.keys.forEach(key => key.style.cssText = '');
+    this.index = 0;
+    this.color = '#ccc';
+  }
+  
   // 更新行數單詞數
   renew(row, words) {
     this.row = row;
@@ -84,7 +109,7 @@ class Keyboard extends View {
     this.rowTime = null;
     this.totalTime = null;
     this.keys = [];
-    this.english = [];
+    this.english = []; 
   }
 }
 
