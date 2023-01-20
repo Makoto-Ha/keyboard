@@ -1,13 +1,12 @@
 class Animation {
-  constructor() {
-                  // <i class="fa-solid fa-person-skiing-nordic"></i>
-                 // <i class="fa-solid fa-person-skiing"></i>
+  move() {
+    let moveDistance = this.container.clientWidth - this.people.clientWidth;
+    let interval = this.keys.length;
+    this.people.style.left = `${parseInt(this.people.style.left) + moveDistance / interval}px`;
   }
 
-  move() {
-    // 寫在這裡是因為只有在callback才能獲取到fonticon svg標籤型態
-    this.people = this.people || document.querySelector('.fa-person-skiing-nordic');
-    this.people.style.left = `${this.container.clientWidth}px`;
+  reset() {
+    this.people.style.left = 0;
   }
 }
 

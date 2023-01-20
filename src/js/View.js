@@ -31,14 +31,14 @@ class View {
         this.english.push(group);
       }
     }
-    console.log(this.keys.length);
   }
-
+  // 移動圖片ICON
   peopleICON() {
     let container = document.querySelector('.container');
     let i = document.createElement('i');
     i.setAttribute('class', 'fa-solid fa-person-skiing-nordic');
     i.style.cssText = `position: absolute; top: -50px; left: 0;`;
+    this.people = i;
     container.appendChild(i);
   }
 

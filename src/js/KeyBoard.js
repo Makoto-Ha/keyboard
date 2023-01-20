@@ -51,18 +51,12 @@ class Keyboard extends View {
       this.color = 'red';
     }
 
-    if (intputKey === 'Escape') this.reset();
+    if (intputKey === 'Escape') {
+      animate.reset.call(this);
+      this.reset();
+    }
   }
-  // 渲染
-  view() {
-    super.keyBoard();
-    super.peopleICON()
-  }
-  clear() {
-    this.keys = [];
-    this.english = [];
-    super.clear();
-  }
+
   bindEvent() {
     this.__proto__.keyEvent = this.keyEvent.bind(this);
     document.addEventListener('keydown', this.keyEvent);
@@ -76,14 +70,26 @@ class Keyboard extends View {
     document.addEventListener('click', () => {
       document.removeEventListener('keydown', this.keyEvent);
       this.container.classList.add('blur');
+      animate.reset.call(this);
       this.reset();
     });
 
     window.addEventListener('blur', () => {
       this.container.classList.add('blur');
+      animate.reset.call(this);
       this.reset();
     });
+  }
 
+  // 渲染
+  view() {
+    super.keyBoard();
+    super.peopleICON()
+  }
+  clear() {
+    this.keys = [];
+    this.english = [];
+    super.clear();
   }
 
   reset() {
