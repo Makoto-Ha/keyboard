@@ -18,7 +18,6 @@ body {
 
 .container {
   position: relative;
-  margin: 0 auto;
 }
 
 .wrap {
@@ -34,4 +33,31 @@ body {
 span {
   font-size: 1rem;
   margin: 0 4px;
+}
+
+.keyboard {
+  margin-top: 10px;
+  border-radius: 10px;
+  width: 970px;
+  height: 230px;
+  position: relative;
+}
+
+.key {
+  display: inline-block;
+  position: absolute;
+  left: 0;
+  top: 190px;
+  width: 40px;
+  height: 40px;
+  font-size: .2rem;
+  text-align: center;
+  line-height: 40px;
+  background: #efefee;
+  border: none;
+}
+
+.bgc {
+  background: #26243d;
+  color: #fff;
 }

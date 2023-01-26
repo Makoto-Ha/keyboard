@@ -33,20 +33,20 @@ class Keyboard extends View {
     console.log(localStorage.getItem('ultimate'));
     console.log('錯誤' + localStorage.getItem('errors'));
     console.log('-------------------');
-    this.renew(Math.round(Math.random() * 3 + 1), Math.round(Math.random() * 3 + 1));
+    this.update(Math.round(Math.random() * 3 + 1), Math.round(Math.random() * 3 + 1));
     // ultimateRecord結束後繼續跑keyEvent會index++，所以-1會變0
     this.index = -1;
   }
   // 事件綁定
   keyEvent({ key: intputKey }) {
-    let currentKey = this.keys[this.index];
-    let isCurrentKey = intputKey === currentKey.getAttribute('currentKey');
+    let key = this.keys[this.index];
+    let isCurrentKey = intputKey === key.getAttribute('currentKey');
     if (isCurrentKey) {
-      this.startRecord(currentKey);
+      this.startRecord(key);
       animate.move.call(this);
-      currentKey.style.cssText = `color: ${this.color}`;
+      key.style.cssText = `color: ${this.color}`;
       this.color = '#ccc';
-      return this.index++;
+      this.index++;
     } else {
       this.color = 'red';
     }
@@ -57,18 +57,38 @@ class Keyboard extends View {
     }
   }
 
-  bindEvent() {
-    this.__proto__.keyEvent = this.keyEvent.bind(this);
-    document.addEventListener('keydown', this.keyEvent);
+  drawKey(event) {
+    if(event.key === 'Tab') event.preventDefault();
+    // targetkey?是因為還沒渲染完畢，會找不到元素
+    let targetKey = this.inputkeys.find(key => key?.dataset.key === event.code);
+    targetKey?.classList.add('bgc');
+    this.selectkeys.push(targetKey);
+  }
 
+  clearDrawKey(event) {
+    // targetkey?這裡是重新整理Ctrl+R會優先偵測到R的放開，也就是比寫入keydown更找觸發
+    this.selectkeys.find(key => key?.dataset.key === event.code)?.classList.remove('bgc');
+  }
+
+  bindEvent() {
+    Object.getPrototypeOf(this).keyEvent = this.keyEvent.bind(this);
+    Object.getPrototypeOf(this).drawKey = this.drawKey.bind(this);
+    Object.getPrototypeOf(this).clearDrawKey = this.clearDrawKey.bind(this);
+    
+    document.addEventListener('keydown', this.keyEvent);
     this.container.addEventListener('click', event => {
       event.stopPropagation();
-      document.addEventListener('keydown', this.keyEvent);
       this.container.classList.remove('blur');
+      document.addEventListener('keydown', this.keyEvent);
+      document.addEventListener('keydown', this.drawKey);
+      document.addEventListener('keyup', this.clearDrawKey);
     });
 
     document.addEventListener('click', () => {
       document.removeEventListener('keydown', this.keyEvent);
+      document.removeEventListener('keydown', this.drawKey);
+      document.removeEventListener('keyup', this.clearDrawKey);
+
       this.container.classList.add('blur');
       animate.reset.call(this);
       this.reset();
@@ -76,18 +96,29 @@ class Keyboard extends View {
 
     window.addEventListener('blur', () => {
       this.container.classList.add('blur');
+      document.removeEventListener('keydown', this.drawKey);
+      document.removeEventListener('keyup', this.clearDrawKey);
       animate.reset.call(this);
       this.reset();
+    });
+
+    window.addEventListener('load', () => {
+      document.addEventListener('keydown', this.drawKey);
+      document.addEventListener('keyup', this.clearDrawKey);
     });
   }
 
   // 渲染
-  view() {
-    super.keyBoard();
-    super.peopleICON()
+  async view() {
+    super.peopleICON();
+    await super.keyBoard();
+    super.keyBoard2();
   }
+
   clear() {
     this.keys = [];
+    this.inputkeys = [];
+    this.selectkeys = [];
     this.english = [];
     super.clear();
   }
@@ -95,12 +126,13 @@ class Keyboard extends View {
   reset() {
     super.rowRecordClear();
     this.keys.forEach(key => key.style.cssText = '');
+    this.selectkeys.forEach(key => key?.classList.remove('bgc'));
     this.index = 0;
     this.color = '#ccc';
   }
   
   // 更新行數單詞數
-  renew(row, words) {
+  update(row, words) {
     this.row = row;
     this.words = words;
     this.clear();
@@ -114,7 +146,11 @@ class Keyboard extends View {
     this.color = '#ccc';
     this.rowTime = null;
     this.totalTime = null;
+     // 上面英文字
     this.keys = [];
+    // 下面的按鍵
+    this.inputkeys = []; 
+    this.selectkeys = [];
     this.english = []; 
   }
 }
