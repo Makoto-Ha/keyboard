@@ -38,44 +38,55 @@ class Keyboard extends View {
     this.index = -1;
   }
   // 事件綁定
-  keyEvent({ key: intputKey }) {
+  keyDownEvent({ key: intputKey }) {
     let key = this.keys[this.index];
     let isCurrentKey = intputKey === key.getAttribute('currentKey');
     if (isCurrentKey) {
       this.startRecord(key);
+      this.people.classList.remove('bgr');
       animate.move.call(this);
       key.style.cssText = `color: ${this.color}`;
       this.color = '#ccc';
       this.index++;
     } else {
+      this.people.classList.add('bgr');
       this.color = 'red';
     }
 
     if (intputKey === 'Escape') {
+      this.people.classList.remove('bgr');
       animate.reset.call(this);
       this.reset();
     }
   }
 
+  keyUpEvent() {
+    this.people.classList.remove('bgr');
+  }
+
   drawKey(event) {
-    if(event.key === 'Tab') event.preventDefault();
+    if (event.key === 'Tab') event.preventDefault();
+    let keys = /^[a-z]{1}$/i.test(event.key) ? this.savekeys.atoz : this.savekeys.all;
     // targetkey?是因為還沒渲染完畢，會找不到元素
-    let targetKey = this.inputkeys.find(key => key?.dataset.key === event.code);
+    let targetKey = keys.find(key => key?.dataset.key === event.code);
     targetKey?.classList.add('bgc');
-    this.selectkeys.push(targetKey);
+    this.savekeys.select.push(targetKey);
   }
 
   clearDrawKey(event) {
-    // targetkey?這裡是重新整理Ctrl+R會優先偵測到R的放開，也就是比寫入keydown更找觸發
-    this.selectkeys.find(key => key?.dataset.key === event.code)?.classList.remove('bgc');
+    // targetkey?這裡是重新整理Ctrl+R會優先偵測到R的放開，也就是比寫入keydown更早觸發
+    this.savekeys.select.find(key => key?.dataset.key === event.code)?.classList.remove('bgc');
   }
 
   bindEvent() {
-    Object.getPrototypeOf(this).keyEvent = this.keyEvent.bind(this);
+    Object.getPrototypeOf(this).keyDownEvent = this.keyDownEvent.bind(this);
+    Object.getPrototypeOf(this).keyUpEvent = this.keyUpEvent.bind(this);
     Object.getPrototypeOf(this).drawKey = this.drawKey.bind(this);
     Object.getPrototypeOf(this).clearDrawKey = this.clearDrawKey.bind(this);
-    
-    document.addEventListener('keydown', this.keyEvent);
+
+    document.addEventListener('keydown', this.keyDownEvent);
+    document.addEventListener('keyup', this.keyUpEvent);
+
     this.container.addEventListener('click', event => {
       event.stopPropagation();
       this.container.classList.remove('blur');
@@ -90,22 +101,22 @@ class Keyboard extends View {
       document.removeEventListener('keyup', this.clearDrawKey);
 
       this.container.classList.add('blur');
+      this.people.classList.remove('bgr');
       animate.reset.call(this);
       this.reset();
     });
 
     window.addEventListener('blur', () => {
       this.container.classList.add('blur');
+      this.people.classList.remove('bgr');
       document.removeEventListener('keydown', this.drawKey);
       document.removeEventListener('keyup', this.clearDrawKey);
       animate.reset.call(this);
       this.reset();
     });
 
-    window.addEventListener('load', () => {
-      document.addEventListener('keydown', this.drawKey);
-      document.addEventListener('keyup', this.clearDrawKey);
-    });
+    document.addEventListener('keydown', this.drawKey);
+    document.addEventListener('keyup', this.clearDrawKey);
   }
 
   // 渲染
@@ -117,8 +128,9 @@ class Keyboard extends View {
 
   clear() {
     this.keys = [];
-    this.inputkeys = [];
-    this.selectkeys = [];
+    this.savekeys.all = [];
+    this.savekeys.atoz = [];
+    this.savekeys.select = [];
     this.english = [];
     super.clear();
   }
@@ -126,11 +138,11 @@ class Keyboard extends View {
   reset() {
     super.rowRecordClear();
     this.keys.forEach(key => key.style.cssText = '');
-    this.selectkeys.forEach(key => key?.classList.remove('bgc'));
+    this.savekeys.select.forEach(key => key?.classList.remove('bgc'));
     this.index = 0;
     this.color = '#ccc';
   }
-  
+
   // 更新行數單詞數
   update(row, words) {
     this.row = row;
@@ -146,12 +158,43 @@ class Keyboard extends View {
     this.color = '#ccc';
     this.rowTime = null;
     this.totalTime = null;
-     // 上面英文字
+    // 上面英文字
     this.keys = [];
     // 下面的按鍵
-    this.inputkeys = []; 
-    this.selectkeys = [];
-    this.english = []; 
+    this.savekeys = {
+      all: [],
+      select: [],
+      atoz: null
+    }
+    this.english = [];
+    this.keyCode = {
+      code: [
+        'Backquote', 'Digit1', 'Digit2', 'Digit3',
+        'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8',
+        'Digit9', 'Digit0', 'Minus', 'Equal', 'Backspace',
+        'Insert', 'Home', 'PageUp', 'NumLock', 'NumpadDivide',
+        'NumpadMultiply', 'NumpadSubtract', 'Tab', 'KeyQ',
+        'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI',
+        'KeyO', 'KeyP', 'BracketLeft', 'BracketRight', 'Backslash',
+        'Delete', 'End', 'PageDown', 'Numpad7', 'Numpad8', 'Numpad9',
+        'NumpadAdd', 'CapsLock', 'KeyA', 'KeyS', 'KeyD', 'KeyF',
+        'KeyG', 'KeyH', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon', 'Quote',
+        'Enter', 'Numpad4', 'Numpad5', 'Numpad6', 'ShiftLeft', 'KeyZ',
+        'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma', 'Period',
+        'Slash', 'ShiftRight', 'ArrowUp', 'Numpad1', 'Numpad2', 'Numpad3',
+        'NumpadEnter', 'ControlLeft', 'AltLeft', 'Space', 'AltRight',
+        'ControlRight', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'Numpad0', 'NumpadDecimal'
+      ],
+      // 暫時沒用到KeyCode.atoz
+      atoz: [
+        'KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY',
+        'KeyU', 'KeyI', 'KeyO', 'KeyP', 'KeyA', 'KeyS',
+        'KeyD', 'KeyF', 'KeyG', 'KeyH', 'KeyJ', 'KeyK',
+        'KeyL', 'KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB',
+        'KeyN', 'KeyM'
+      ],
+      index: 0
+    }
   }
 }
 

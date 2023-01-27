@@ -43,28 +43,7 @@ class View {
 
   keyBoard2() {
     let div = document.createElement('div');
-    let y = 0;
-    let keyCode = { 
-      code: [
-        'Backquote', 'Digit1', 'Digit2', 'Digit3', 
-        'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 
-        'Digit9', 'Digit0', 'Minus', 'Equal', 'Backspace', 
-        'Insert', 'Home', 'PageUp', 'NumLock', 'NumpadDivide', 
-        'NumpadMultiply', 'NumpadSubtract', 'Tab', 'KeyQ', 
-        'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI',
-        'KeyO', 'KeyP', 'BracketLeft', 'BracketRight', 'Backslash',
-        'Delete', 'End', 'PageDown', 'Numpad7', 'Numpad8', 'Numpad9',
-        'NumpadAdd', 'CapsLock', 'KeyA', 'KeyS', 'KeyD', 'KeyF',
-        'KeyG', 'KeyH', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon', 'Quote',
-        'Enter', 'Numpad4', 'Numpad5', 'Numpad6', 'ShiftLeft', 'KeyZ',
-        'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma', 'Period',
-        'Slash', 'ShiftRight', 'ArrowUp', 'Numpad1', 'Numpad2', 'Numpad3',
-        'NumpadEnter', 'ControlLeft', 'AltLeft', 'Space', 'AltRight', 
-        'ControlRight', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'Numpad0','NumpadDecimal' 
-      ], 
-      index: 0 
-    }
-  
+    let y = 10;
     let rowkey = keys => {
       // 起始是0，但因為一開始gap會加2，所以-2開始
       let x = -2;
@@ -78,14 +57,13 @@ class View {
                               height: ${key.height}px`
 
         x += gap + width;
-
         span.innerText = key.text || key;
-        span.dataset.key = keyCode.code[keyCode.index];
-        keyCode.index++;
+        span.dataset.key = this.keyCode.code[this.keyCode.index];
+        this.keyCode.index++;
         span.setAttribute('class', 'key');
         div.setAttribute('class', 'keyboard');
         div.appendChild(span);
-        this.inputkeys.push(span);
+        this.savekeys.all.push(span);
       });
       y += 42;
     }
@@ -93,7 +71,7 @@ class View {
     let first = [
       { text: '`', gap: 0, width: 40 }, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, '-',
       '=', { text: 'Backspace', gap: 2, width: 82 }, { text: 'Insert', gap: 20, width: 40 },
-      'Home', 'PageUp', { text: 'Num', gap: 20, width: 40 }, '/', '*', '-'
+      'Home', 'PageU', { text: 'Num', gap: 20, width: 40 }, '/', '*', '-'
     ];
 
     let second = [
@@ -119,20 +97,18 @@ class View {
       { text: 'Alt', gap: 2, width: 63 }, {text: 'Ctrl', gap: 2, width: 63}, {text: '⇦', gap: 19, width: 40}, 
       '⇩', '⇨', {text: '0 ins', gap: 20, width: 82}, '.' 
     ];
-
-    rowkey(first);
-    rowkey(second);
-    rowkey(third);
-    rowkey(fourth);
-    rowkey(fifth);
+    // 重新渲染index要歸0，或著不重新渲染鍵盤就可以不用寫這行
+    this.keyCode.index = 0;
+    [first, second, third, fourth, fifth].forEach(item => rowkey(item));
     this.container.appendChild(div);
+    this.savekeys.atoz = this.savekeys.all.filter(key => /^Key[A-Z]{1}$/.test(key.dataset.key));
   }
 
   // 移動圖片ICON
   peopleICON() {
     let container = document.querySelector('.container');
     let icon = document.createElement('i');
-    icon.setAttribute('class', 'fa-solid fa-person-skiing-nordic');
+    icon.setAttribute('class', 'fa-solid fa-truck-field-un');
     icon.style.cssText = `position: absolute; top: -50px; left: 0;`;
     this.people = icon;
     container.appendChild(icon);
