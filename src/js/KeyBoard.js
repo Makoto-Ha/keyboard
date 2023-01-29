@@ -6,13 +6,13 @@ class Keyboard extends View {
   constructor(data) {
     super();
     this.init(data);
-    this.view();
+    this.render();
     this.bindEvent();
   }
   // 開始打字後記錄時間
   startRecord(key) {
-    this.totalTime = this.index === 0 ? new Date().getTime() : this.totalTime;
-    this.rowTime = this.index === 0 ? new Date().getTime() : this.rowTime;
+    this.totalTime = this.letter.index === 0 ? new Date().getTime() : this.totalTime;
+    this.rowTime = this.letter.index === 0 ? new Date().getTime() : this.rowTime;
     if (key.getAttribute('last')) this.rowRecord(key);
     if (key.getAttribute('ultimate')) this.ultimateRecord(key);
   }
@@ -28,18 +28,18 @@ class Keyboard extends View {
     let nowTime = new Date().getTime();
     let total = ((nowTime - this.totalTime) / 1000).toFixed(2) + '秒';
     localStorage.setItem('ultimate', '上次打字花費時間' + total);
-    localStorage.setItem('errors', this.keys.filter(span => span.style.color === 'red').length);
+    localStorage.setItem('errors', this.letter.keys.filter(span => span.style.color === 'red').length);
     console.log('-------------------');
     console.log(localStorage.getItem('ultimate'));
     console.log('錯誤' + localStorage.getItem('errors'));
     console.log('-------------------');
     this.update(Math.round(Math.random() * 3 + 1), Math.round(Math.random() * 3 + 1));
     // ultimateRecord結束後繼續跑keyEvent會index++，所以-1會變0
-    this.index = -1;
+    this.letter.index = -1;
   }
   // 事件綁定
   keyDownEvent({ key: intputKey }) {
-    let key = this.keys[this.index];
+    let key = this.letter.keys[this.letter.index];
     let isCurrentKey = intputKey === key.getAttribute('currentKey');
     if (isCurrentKey) {
       this.startRecord(key);
@@ -47,7 +47,7 @@ class Keyboard extends View {
       animate.move.call(this);
       key.style.cssText = `color: ${this.color}`;
       this.color = '#ccc';
-      this.index++;
+      this.letter.index++;
     } else {
       this.people.classList.add('bgr');
       this.color = 'red';
@@ -86,17 +86,17 @@ class Keyboard extends View {
 
     document.addEventListener('keydown', this.keyDownEvent);
     document.addEventListener('keyup', this.keyUpEvent);
-
+    // 點擊英文區塊解除模糊和打字限制
     this.container.addEventListener('click', event => {
       event.stopPropagation();
       this.container.classList.remove('blur');
-      document.addEventListener('keydown', this.keyEvent);
+      document.addEventListener('keydown', this.keyDownEvent);
       document.addEventListener('keydown', this.drawKey);
       document.addEventListener('keyup', this.clearDrawKey);
     });
-
+    // 點擊英文區塊外增加模糊和無法打字
     document.addEventListener('click', () => {
-      document.removeEventListener('keydown', this.keyEvent);
+      document.removeEventListener('keydown', this.keyDownEvent);
       document.removeEventListener('keydown', this.drawKey);
       document.removeEventListener('keyup', this.clearDrawKey);
 
@@ -105,7 +105,7 @@ class Keyboard extends View {
       animate.reset.call(this);
       this.reset();
     });
-
+    // 焦點在視窗外模糊和無法打字
     window.addEventListener('blur', () => {
       this.container.classList.add('blur');
       this.people.classList.remove('bgr');
@@ -120,26 +120,27 @@ class Keyboard extends View {
   }
 
   // 渲染
-  async view() {
+  async render() {
     super.peopleICON();
-    await super.keyBoard();
-    super.keyBoard2();
+    await super.typeBlock();
+    super.keyBoard();
   }
 
   clear() {
-    this.keys = [];
+    this.letter.keys = [];
     this.savekeys.all = [];
     this.savekeys.atoz = [];
     this.savekeys.select = [];
-    this.english = [];
+    this.wraps = [];
+    this.groups = [];
     super.clear();
   }
 
   reset() {
     super.rowRecordClear();
-    this.keys.forEach(key => key.style.cssText = '');
+    this.letter.keys.forEach(key => key.style.cssText = '');
     this.savekeys.select.forEach(key => key?.classList.remove('bgc'));
-    this.index = 0;
+    this.letter.index = 0;
     this.color = '#ccc';
   }
 
@@ -148,53 +149,26 @@ class Keyboard extends View {
     this.row = row;
     this.words = words;
     this.clear();
-    this.view();
+    this.render();
   }
   // 初始化
   init({ row, words }) {
-    this.index = 0;
-    this.row = row;
-    this.words = words;
-    this.color = '#ccc';
-    this.rowTime = null;
-    this.totalTime = null;
-    // 上面英文字
-    this.keys = [];
-    // 下面的按鍵
+    this.letter = {
+      keys: [],
+      index: 0
+    };
     this.savekeys = {
       all: [],
       select: [],
       atoz: null
-    }
-    this.english = [];
-    this.keyCode = {
-      code: [
-        'Backquote', 'Digit1', 'Digit2', 'Digit3',
-        'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8',
-        'Digit9', 'Digit0', 'Minus', 'Equal', 'Backspace',
-        'Insert', 'Home', 'PageUp', 'NumLock', 'NumpadDivide',
-        'NumpadMultiply', 'NumpadSubtract', 'Tab', 'KeyQ',
-        'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI',
-        'KeyO', 'KeyP', 'BracketLeft', 'BracketRight', 'Backslash',
-        'Delete', 'End', 'PageDown', 'Numpad7', 'Numpad8', 'Numpad9',
-        'NumpadAdd', 'CapsLock', 'KeyA', 'KeyS', 'KeyD', 'KeyF',
-        'KeyG', 'KeyH', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon', 'Quote',
-        'Enter', 'Numpad4', 'Numpad5', 'Numpad6', 'ShiftLeft', 'KeyZ',
-        'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma', 'Period',
-        'Slash', 'ShiftRight', 'ArrowUp', 'Numpad1', 'Numpad2', 'Numpad3',
-        'NumpadEnter', 'ControlLeft', 'AltLeft', 'Space', 'AltRight',
-        'ControlRight', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'Numpad0', 'NumpadDecimal'
-      ],
-      // 暫時沒用到KeyCode.atoz
-      atoz: [
-        'KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY',
-        'KeyU', 'KeyI', 'KeyO', 'KeyP', 'KeyA', 'KeyS',
-        'KeyD', 'KeyF', 'KeyG', 'KeyH', 'KeyJ', 'KeyK',
-        'KeyL', 'KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB',
-        'KeyN', 'KeyM'
-      ],
-      index: 0
-    }
+    };
+    this.wraps = [];
+    this.groups = [];
+    this.row = row;
+    this.words = words;
+    this.color = '#ccc';
+    this.rowTime = null;
+    this.totalTime = null
   }
 }
 

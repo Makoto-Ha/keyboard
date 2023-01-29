@@ -16,20 +16,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.container {
-  position: relative;
-}
-
-.wrap {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.blur {
-  filter: blur(3px);
+  width:initial
 }
 
 span {
@@ -37,10 +24,25 @@ span {
   margin: 0 4px;
 }
 
+
+.container {
+  position: relative;
+}
+
+.wrap {
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+}
+
+.blur {
+  filter: blur(3px);
+}
+
 .keyboard {
   margin-top: 10px;
   border-radius: 10px;
-  width: 1000px;
+  width: 1176px;
   height: 230px;
   position: relative;
 }
@@ -50,11 +52,11 @@ span {
   position: absolute;
   left: 0;
   top: 190px;
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   font-size: .2rem;
   text-align: center;
-  line-height: 40px;
+  line-height: 50px;
   background: rgb(255, 173, 173);
   color: #fff;
   border: none;

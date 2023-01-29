@@ -1,7 +1,7 @@
 class Animation {
   move() {
     let moveDistance = this.container.clientWidth - this.people.clientWidth;
-    let interval = this.keys.length;
+    let interval = this.letter.keys.length;
     this.people.style.left = `${parseInt(this.people.style.left) + moveDistance / interval}px`;
   }
 
